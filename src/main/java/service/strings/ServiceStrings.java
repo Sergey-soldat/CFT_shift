@@ -1,32 +1,34 @@
 package service.strings;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import model.output.OutputStrings;
 import writer.Writer;
 
 import java.util.List;
 
 @Data
+@Slf4j
 public class ServiceStrings {
-    private OutputStrings strings;
+    private final OutputStrings strings;
     private final Writer writer = new Writer();
 
     public ServiceStrings(OutputStrings strings) {
         this.strings = strings;
     }
 
-    public void writeStringsToFile(String directoryPath, String prefix, boolean isRecoding) {
-        if (!strings.getStrings().isEmpty()) {
-            writer.toWriteOfStrings(strings.getStrings(), directoryPath, prefix, isRecoding);
-        }
-    }
-
     public void fullStringsStatistic () {
-        int shortString = findShortString(strings.getStrings());
-        int longString = findLongString(strings.getStrings());
-        System.out.println("Количество строковых элементов = " + strings.getStrings().size());
-        System.out.println("Самая короткая строка длиной " + shortString);
-        System.out.println("Самая длинная строка длиной " + longString);
+        if (strings.getStrings().isEmpty()) {
+            log.info("Строковых элементов нет");
+            System.out.println("Строковых жлементов нет");
+        } else {
+            log.info("Печать полной статистики для строковых элементов");
+            int shortString = findShortString(strings.getStrings());
+            int longString = findLongString(strings.getStrings());
+            System.out.println("Количество строковых элементов = " + strings.getStrings().size());
+            System.out.println("Самая короткая строка длиной " + shortString);
+            System.out.println("Самая длинная строка длиной " + longString);
+        }
     }
 
     private int findLongString(List<String> strings) {
@@ -36,6 +38,7 @@ public class ServiceStrings {
                 longLength = str.length();
             }
         }
+        log.info("Длина самой длинной строки: " + longLength);
         return longLength;
     }
 
@@ -46,6 +49,7 @@ public class ServiceStrings {
                 shortestLength = str.length();
             }
         }
+        log.info("Длина самой короткой строки: " + shortestLength);
         return shortestLength;
     }
 }

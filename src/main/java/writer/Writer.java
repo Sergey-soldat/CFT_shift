@@ -1,100 +1,85 @@
 package writer;
 
-import service.Service;
+//import com.sun.tools.classfile.ConstantPool;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import writer.doubles.DoublesWriter;
+import writer.integers.IntegersWriter;
+import writer.strings.StringsWriter;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
+@Data
 public class Writer {
+    private File outputFileInt;
+    private File outputFileDoubles;
+    private File outputFileStrings;
+    private FileWriter fileWriterInt;
+    private FileWriter fileWriterDoubles;
+    private FileWriter fileWriterStrings;
+    private final IntegersWriter integersWriter = new IntegersWriter();
+    private final DoublesWriter doublesWriter = new DoublesWriter();
+    private final StringsWriter stringsWriter = new StringsWriter();
 
-    public void toWriteOfIntegers(List<Long> integers, String directoryPath, String prefix, boolean isRecoding) {
-        String fileName = prefix + "integers.txt";
-        File outputFile = createDirectoryPath(directoryPath, fileName);
-        try(FileWriter writer = isRecoding(outputFile, isRecoding)) {
-            for (Long i : integers){
-                assert writer != null;
-                writer.write(String.valueOf(i));
-                writer.write("\n");
-            }
-            assert writer != null;
-            writer.flush();
+    public void toWrite(List<Long> integers, List<Double> doubles, List<String> strings,
+                        String directoryPath, String prefix, boolean isRecording) {
+        if (!integers.isEmpty()) {
+            String fileNameInt = integersWriter.fileNameWithPrefix(prefix);
+            outputFileInt = createDirectoryPath(directoryPath, fileNameInt);
+            fileWriterInt = isRecoding(outputFileInt, isRecording);
+            integersWriter.toWriteOfIntegers(integers, fileWriterInt);
         }
-        catch(IOException ex){
-            System.out.println(ex.getMessage());
-            System.out.println("Что-то не так с путём");
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
+        if (!doubles.isEmpty()) {
+            String fileNameDoubles = doublesWriter.fileNameWithPrefix(prefix);
+            outputFileDoubles = createDirectoryPath(directoryPath, fileNameDoubles);
+            fileWriterDoubles = isRecoding(outputFileDoubles, isRecording);
+            doublesWriter.toWriteOfIntegers(doubles, fileWriterDoubles);
         }
-    }
-
-    public void toWriteOfDoubles(List<Double> doubles, String directoryPath, String prefix, boolean isRecoding) {
-        String fileName = prefix + "floats.txt";
-        File outputFile = createDirectoryPath(directoryPath, fileName);
-        try(FileWriter writer = isRecoding(outputFile, isRecoding)) {
-            for (Double d : doubles){
-                assert writer != null;
-                writer.write(String.valueOf(d));
-                writer.write("\n");
-            }
-            assert writer != null;
-            writer.flush();
-        }
-        catch(IOException ex){
-            System.out.println(ex.getMessage());
-            System.out.println("Что-то не так с путём");
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public void toWriteOfStrings(List<String> list, String directoryPath, String prefix, boolean isRecoding) {
-        String fileName = prefix + "strings.txt";
-        File outputFile = createDirectoryPath(directoryPath, fileName);
-        try(FileWriter writer = isRecoding(outputFile, isRecoding)) {
-            for (String s : list){
-                assert writer != null;
-                writer.write(s);
-                writer.write("\n");
-            }
-            assert writer != null;
-            writer.flush();
-        }
-        catch(IOException ex){
-            System.out.println(ex.getMessage());
-            System.out.println("Что-то не так с путём");
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
+        if (!strings.isEmpty()) {
+            String fileNameStrings = stringsWriter.fileNameWithPrefix(prefix);
+            outputFileStrings = createDirectoryPath(directoryPath, fileNameStrings);
+            fileWriterStrings = isRecoding(outputFileStrings, isRecording);
+            stringsWriter.toWriteOfIntegers(strings, fileWriterStrings);
         }
     }
 
     private FileWriter isRecoding (File outputFile, boolean isRecoding) {
         if (isRecoding) {
             try{
+                log.info("Включена перезапись в файл");
                 return new FileWriter(outputFile, true);
             } catch(IOException ex){
                 ex.printStackTrace();
+                log.debug("Произошла ошибка");
                 throw new RuntimeException(ex);
             }
         } else {
             try{
+                log.info("Перезапись в файл выключена");
                 return new FileWriter(outputFile, false);
             } catch (IOException e) {
+                log.debug("Произошла ошибка");
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private File createDirectoryPath(String directoryParh, String fileName) {
+    public File createDirectoryPath(String directoryParh, String fileName) {
         if (!directoryParh.isEmpty()) {
             File allDirectoryes = new File(directoryParh);
             if (allDirectoryes.mkdirs()) {
+                log.info("Создана новая директория");
                 return new File(allDirectoryes, fileName);
             } else {
+                log.info("Создана новая директория");
                 return new File(allDirectoryes, fileName);
             }
         } else {
+            log.info("Используем директорию по умолчанию");
             return new File(fileName);
         }
     }
